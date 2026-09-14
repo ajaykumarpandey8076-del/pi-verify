@@ -52,7 +52,6 @@
     </div>
 
     <script>
-        // Pi SDK Initialization
         Pi.init({ version: "2.0", sandbox: true });
 
         const statusDiv = document.getElementById("status-msg");
@@ -61,9 +60,7 @@
             statusDiv.innerText = "Authenticating...";
 
             const scopes = ['username', 'payments'];
-            Pi.authenticate(scopes, function(payment) {
-                // Incomplete payment callback
-            }).then(function(auth) {
+            Pi.authenticate(scopes, function(payment) {}).then(function(auth) {
                 statusDiv.innerText = "Logged in: " + auth.user.username;
                 triggerU2APayment();
             }).catch(function(error) {
