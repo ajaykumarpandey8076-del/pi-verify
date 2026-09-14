@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Saathi AI</title>
+    <!-- Pi SDK Integration -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -25,22 +27,56 @@
         }
         h1 { margin-bottom: 10px; font-size: 2.5rem; }
         p { font-size: 1.2rem; opacity: 0.9; }
-        .status {
+        .btn {
             margin-top: 20px;
             display: inline-block;
-            padding: 8px 16px;
-            background: #28a745;
-            color: white;
-            border-radius: 20px;
+            padding: 12px 24px;
+            background: #ffc107;
+            color: #000;
+            border-radius: 25px;
             font-weight: bold;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
         }
+        .btn:hover { background: #e0a800; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Form Saathi AI</h1>
         <p>Your Intelligent Assistant for Government Form Guidance</p>
-        <div class="status">App is Live & Connected</div>
+        <button class="btn" onclick="triggerTestPayment()">Test Pi Payment (App to User)</button>
     </div>
+
+    <script>
+        // Pi SDK Initialization
+        Pi.init({ version: "2.0", sandbox: true });
+
+        function triggerTestPayment() {
+            const paymentData = {
+                amount: 1,
+                memo: "Test payment for Form Saathi AI",
+                metadata: { paymentType: "test" },
+            };
+
+            const callbacks = {
+                onReadyForServerApproval: function(paymentId) {
+                    console.log("Ready for server approval", paymentId);
+                },
+                onReadyForServerCompletion: function(paymentId, txid) {
+                    alert("Payment successful! TxID: " + txid);
+                },
+                onCancel: function(paymentId) {
+                    console.log("Payment cancelled", paymentId);
+                },
+                onError: function(error, payment) {
+                    alert("Payment error: " + error.message);
+                }
+            };
+
+            Pi.createPayment(paymentData, callbacks);
+        }
+    </script>
 </body>
 </html>
