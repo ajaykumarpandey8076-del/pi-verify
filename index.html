@@ -47,7 +47,7 @@
     <div class="container">
         <h1>Form Saathi AI</h1>
         <p>Your Intelligent Assistant for Government Form Guidance</p>
-        <button class="btn" onclick="startPayment()">Pay 1 Test Pi</button>
+        <button class="btn" onclick="authenticateAndPay()">Pay 1 Test Pi</button>
         <div id="status-msg">Initializing Pi SDK...</div>
     </div>
 
@@ -56,9 +56,24 @@
 
         const statusDiv = document.getElementById("status-msg");
 
-        function startPayment() {
-            statusDiv.innerText = "Opening payment window...";
+        function authenticateAndPay() {
+            statusDiv.innerText = "Authenticating with Pi...";
+            
+            const scopes = ['username', 'payments'];
+            const onIncompletePaymentFound = function(payment) {
+                console.log("Incomplete payment found:", payment);
+            };
 
+            Pi.authenticate(scopes, onIncompletePaymentFound).then(function(auth) {
+                statusDiv.innerText = "Logged in as " + auth.user.username + ". Opening payment...";
+                triggerPayment();
+            }).catch(function(error) {
+                statusDiv.innerText = "Auth Error: " + error.message;
+                alert("Authentication Failed: " + error.message);
+            });
+        }
+
+        function triggerPayment() {
             const paymentData = {
                 amount: 1,
                 memo: "Checklist Test Payment",
@@ -67,11 +82,11 @@
 
             const callbacks = {
                 onReadyForServerApproval: function(paymentId) {
-                    statusDiv.innerText = "Waiting for approval...";
+                    statusDiv.innerText = "Payment ready. Approving...";
                 },
                 onReadyForServerCompletion: function(paymentId, txid) {
                     statusDiv.innerText = "Success! TxID: " + txid;
-                    alert("Payment Successful! TxID: " + txid);
+                    alert("Test Transaction Successful! TxID: " + txid);
                 },
                 onCancel: function(paymentId) {
                     statusDiv.innerText = "Payment cancelled.";
@@ -86,7 +101,7 @@
         }
 
         window.onload = function() {
-            statusDiv.innerText = "Ready. Click to pay.";
+            statusDiv.innerText = "Ready. Click to login and pay.";
         };
     </script>
 </body>
