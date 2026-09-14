@@ -40,18 +40,39 @@
             font-size: 1rem;
         }
         .btn:hover { background: #e0a800; }
+        #status-msg { margin-top: 15px; font-size: 0.9rem; color: #d4edda; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Form Saathi AI</h1>
         <p>Your Intelligent Assistant for Government Form Guidance</p>
-        <button class="btn" onclick="triggerTestPayment()">Test Pi Payment (App to User)</button>
+        <button class="btn" onclick="startPiPayment()">Test Pi Payment (App to User)</button>
+        <div id="status-msg">Initializing Pi SDK...</div>
     </div>
 
     <script>
         // Pi SDK Initialization
         Pi.init({ version: "2.0", sandbox: true });
+
+        const statusDiv = document.getElementById("status-msg");
+
+        function startPiPayment() {
+            statusDiv.innerText = "Authenticating user...";
+            
+            const scopes = ['username', 'payments'];
+            function onIncompletePaymentFound(payment) {
+                console.log("Incomplete payment found", payment);
+            }
+
+            Pi.authenticate(scopes, onIncompletePaymentFound).then(function(auth) {
+                statusDiv.innerText = "Logged in as: " + auth.user.username + ". Opening payment...";
+                triggerTestPayment();
+            }).catch(function(error) {
+                statusDiv.innerText = "Auth Error: " + error.message;
+                alert("Authentication failed: " + error.message);
+            });
+        }
 
         function triggerTestPayment() {
             const paymentData = {
@@ -62,21 +83,29 @@
 
             const callbacks = {
                 onReadyForServerApproval: function(paymentId) {
+                    statusDiv.innerText = "Ready for server approval. ID: " + paymentId;
                     console.log("Ready for server approval", paymentId);
                 },
                 onReadyForServerCompletion: function(paymentId, txid) {
+                    statusDiv.innerText = "Payment successful! TxID: " + txid;
                     alert("Payment successful! TxID: " + txid);
                 },
                 onCancel: function(paymentId) {
+                    statusDiv.innerText = "Payment cancelled.";
                     console.log("Payment cancelled", paymentId);
                 },
                 onError: function(error, payment) {
+                    statusDiv.innerText = "Payment error occurred.";
                     alert("Payment error: " + error.message);
                 }
             };
 
             Pi.createPayment(paymentData, callbacks);
         }
+
+        window.onload = function() {
+            statusDiv.innerText = "Ready. Click the button to test payment.";
+        };
     </script>
 </body>
 </html>
